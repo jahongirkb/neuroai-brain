@@ -27,6 +27,7 @@ app.add_middleware(
 print("⏳ Model yuklanmoqda...")
 
 model = SwinUNETR(
+    img_size=(128, 128, 128),
     in_channels=4,
     out_channels=3,
     feature_size=48,
