@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+torch
+monai
+nibabel
+numpy
+matplotlib
+einops

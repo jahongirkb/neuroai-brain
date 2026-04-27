@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroAI — Miya O'simtasi Segmentatsiyasi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME VARIABLES ===== */
+:root {
+  --bg:      #f4f6ff;
+  --bg2:     #ffffff;
+  --bg3:     #eaedfa;
+  --card:    #ffffff;
+  --card2:   #f0f3ff;
+  --border:  rgba(99,102,241,0.13);
+  --border2: rgba(99,102,241,0.28);
+  --text:    #0f1132;
+  --text2:   #3a3f6b;
+  --text3:   #6b72a8;
+  --accent:  #6366f1;
+  --accent2: #818cf8;
+  --brain:   #a855f7;
+  --brain2:  #c084fc;
+  --brain3:  #e879f9;
+  --cyan:    #06b6d4;
+  --cyan2:   #22d3ee;
+  --success: #16a34a;
+  --warn:    #d97706;
+  --danger:  #dc2626;
+  --shadow:  0 4px 24px rgba(99,102,241,0.10);
+  --shadow2: 0 2px 8px rgba(99,102,241,0.07);
+  --radius:  16px;
+  --radius2: 10px;
+  --tr:      0.22s cubic-bezier(0.4,0,0.2,1);
+  --glow:    0 0 28px rgba(99,102,241,0.14);
+}
+[data-theme="dark"] {
+  --bg:      #080c1a;
+  --bg2:     #0d1225;
+  --bg3:     #111930;
+  --card:    #0f1628;
+  --card2:   #161f3a;
+  --border:  rgba(129,140,248,0.12);
+  --border2: rgba(129,140,248,0.26);
+  --text:    #e2e8ff;
+  --text2:   #8b9dcc;
+  --text3:   #4a5880;
+  --shadow:  0 4px 28px rgba(0,0,0,0.5);
+  --shadow2: 0 2px 10px rgba(0,0,0,0.4);
+  --glow:    0 0 30px rgba(99,102,241,0.22);
+}
+
+/* ===== RESET ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--tr),color var(--tr);overflow-x:hidden}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
+input,select,textarea{font-family:inherit;outline:none}
+
+/* ===== GRID BG ===== */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(99,102,241,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,0.04) 1px,transparent 1px);
+  background-size:50px 50px}
+[data-theme="dark"] body::before{
+  background-image:linear-gradient(rgba(129,140,248,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(129,140,248,0.025) 1px,transparent 1px)}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
+
+/* ===== LAYOUT ===== */
+.layout{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  width:256px;background:var(--card);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;
+  z-index:100;transition:transform var(--tr),background var(--tr);
+  box-shadow:2px 0 20px rgba(0,0,0,0.06)}
+.sidebar-logo{
+  padding:26px 20px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px}
+.logo-icon{
+  width:42px;height:42px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--brain));
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;box-shadow:var(--glow)}
+.logo-text{font-family:'DM Serif Display',serif;font-size:19px;line-height:1.1}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;font-weight:500}
+
+.sidebar-nav{flex:1;padding:14px 10px;overflow-y:auto}
+.nav-sec{font-size:10px;font-weight:600;letter-spacing:.12em;color:var(--text3);
+  text-transform:uppercase;padding:8px 12px 5px;margin-top:6px}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:var(--radius2);
+  color:var(--text2);font-size:13.5px;font-weight:500;cursor:pointer;
+  transition:all var(--tr);margin-bottom:2px;position:relative}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(99,102,241,0.12);color:var(--accent2)}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:18%;bottom:18%;
+  width:3px;background:linear-gradient(180deg,var(--accent),var(--brain));
+  border-radius:0 2px 2px 0}
+.nav-icon{font-size:17px;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{
+  margin-left:auto;background:linear-gradient(135deg,var(--accent),var(--brain));
+  color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px}
+
+.sidebar-footer{padding:14px 10px;border-top:1px solid var(--border)}
+.sidebar-profile{
+  display:flex;align-items:center;gap:11px;padding:9px 11px;
+  border-radius:var(--radius2);cursor:pointer;transition:background var(--tr)}
+.sidebar-profile:hover{background:var(--bg3)}
+.profile-avatar{
+  width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--brain));
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.profile-name{font-size:13px;font-weight:600}
+.profile-role{font-size:11px;color:var(--text3)}
+
+/* ===== MAIN ===== */
+.main{margin-left:256px;flex:1;display:flex;flex-direction:column}
+
+/* ===== TOPBAR ===== */
+.topbar{
+  background:var(--card);border-bottom:1px solid var(--border);
+  padding:0 28px;height:62px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:50;
+  transition:background var(--tr)}
+.topbar-left{display:flex;align-items:center;gap:13px}
+.page-title{font-family:'DM Serif Display',serif;font-size:20px}
+.breadcrumb{font-size:12px;color:var(--text3)}
+.topbar-right{display:flex;align-items:center;gap:9px}
+.btn-icon{
+  width:36px;height:36px;border-radius:9px;background:var(--bg3);
+  border:1px solid var(--border);display:flex;align-items:center;
+  justify-content:center;font-size:16px;color:var(--text2);
+  transition:all var(--tr);cursor:pointer}
+.btn-icon:hover{background:var(--card2);border-color:var(--border2);color:var(--text)}
+.clock-pill{
+  background:var(--bg3);border:1px solid var(--border);border-radius:20px;
+  padding:5px 13px;font-size:12.5px;font-weight:600;color:var(--accent2);
+  letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.lang-toggle{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:3px;gap:2px}
+.lang-btn{
+  padding:4px 9px;border-radius:7px;font-size:11px;font-weight:700;
+  color:var(--text3);background:transparent;border:none;cursor:pointer;transition:all var(--tr)}
+.lang-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(99,102,241,0.3)}
+.hamburger{display:none}
+
+/* ===== CONTENT ===== */
+.content{padding:28px;flex:1}
+.section{display:none;animation:fadeIn .3s ease}
+.section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ===== BANNER ===== */
+.welcome-banner{
+  background:linear-gradient(135deg,rgba(99,102,241,0.10),rgba(168,85,247,0.07));
+  border:1px solid var(--border2);border-radius:var(--radius);
+  padding:26px 28px;margin-bottom:26px;display:flex;
+  align-items:center;justify-content:space-between;
+  position:relative;overflow:hidden}
+.welcome-banner::before{
+  content:'🧠';position:absolute;right:-6px;top:-14px;
+  font-size:120px;opacity:.04;line-height:1;pointer-events:none}
+.banner-title{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:6px}
+.banner-sub{color:var(--text2);font-size:13px}
+.badge-ai{
+  background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);
+  color:var(--accent2);font-size:12px;font-weight:600;
+  padding:6px 14px;border-radius:20px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+
+/* ===== STATS ===== */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:26px}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 16px;transition:all var(--tr);cursor:default;position:relative;overflow:hidden}
+.stat-card::after{
+  content:'';position:absolute;top:-16px;right:-16px;
+  width:72px;height:72px;border-radius:50%;
+  background:radial-gradient(circle,rgba(99,102,241,0.08) 0%,transparent 70%);pointer-events:none}
+.stat-card:hover{border-color:var(--border2);box-shadow:var(--shadow2);transform:translateY(-2px)}
+.stat-icon{font-size:20px;margin-bottom:10px}
+.stat-val{font-size:26px;font-weight:700;font-family:'DM Serif Display',serif;margin-bottom:3px}
+.stat-lbl{font-size:10.5px;color:var(--text3);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+
+/* ===== SECTION HEADER ===== */
+.sec-title{font-family:'DM Serif Display',serif;font-size:19px;margin-bottom:5px}
+.sec-sub{color:var(--text3);font-size:13px;margin-bottom:18px}
+
+/* ===== ANALYSIS GRID ===== */
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.acard{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;transition:background var(--tr)}
+.acard-title{
+  font-size:13px;font-weight:600;color:var(--text2);
+  margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+/* Upload zone */
+.upload-zone{
+  border:2px dashed var(--border2);border-radius:var(--radius2);
+  padding:34px 20px;text-align:center;cursor:pointer;
+  transition:all var(--tr);position:relative;background:var(--bg3)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(99,102,241,0.05)}
+.upload-icon{font-size:36px;margin-bottom:10px;opacity:.45}
+.upload-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.upload-sub{font-size:11.5px;color:var(--text3)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-preview{display:none;margin-top:13px;border-radius:var(--radius2);overflow:hidden;border:1px solid var(--border)}
+.upload-preview img{width:100%;max-height:180px;object-fit:cover;display:block}
+
+/* Type buttons */
+.type-row{display:flex;gap:6px;flex-wrap:wrap;margin:13px 0}
+.type-btn{
+  padding:6px 13px;border-radius:7px;font-size:12px;font-weight:600;
+  background:var(--bg3);border:1px solid var(--border);color:var(--text2);
+  transition:all var(--tr);cursor:pointer}
+.type-btn.active,.type-btn:hover{
+  background:rgba(99,102,241,0.12);border-color:var(--accent);color:var(--accent2)}
+
+/* Analyze button */
+.btn-analyze{
+  width:100%;padding:12px;border-radius:var(--radius2);
+  background:linear-gradient(135deg,var(--accent),var(--brain));
+  color:#fff;font-size:14.5px;font-weight:600;
+  transition:all var(--tr);margin-top:8px;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-analyze:hover{opacity:.88;transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,0.38)}
+.btn-analyze:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+/* Loading bar */
+.lbar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:9px;display:none}
+.lbar-fill{
+  height:100%;border-radius:2px;width:0;transition:width .3s;
+  background:linear-gradient(90deg,var(--accent),var(--brain2),var(--brain3),var(--accent));
+  background-size:200% 100%;animation:lbarAnim 1.5s linear infinite}
+@keyframes lbarAnim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Result area */
+.result-area{min-height:190px;position:relative}
+.result-empty{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:38px 18px;color:var(--text3)}
+.result-empty-icon{font-size:36px;opacity:.22;margin-bottom:9px}
+.result-empty-text{font-size:13px}
+.spinner{
+  display:none;width:28px;height:28px;border:3px solid var(--border);
+  border-top-color:var(--brain);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-content{display:none}
+
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.result-status{
+  font-size:13.5px;font-weight:700;padding:5px 13px;border-radius:8px;
+  display:flex;align-items:center;gap:5px}
+.result-status.normal{background:rgba(22,163,74,0.10);color:var(--success)}
+.result-status.attention{background:rgba(217,119,6,0.10);color:var(--warn)}
+.result-status.critical{background:rgba(220,38,38,0.10);color:var(--danger)}
+.result-ts{font-size:11px;color:var(--text3)}
+
+.findings{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.finding{
+  display:flex;gap:9px;align-items:flex-start;
+  padding:9px 11px;border-radius:8px;font-size:12px}
+.finding.normal{background:rgba(22,163,74,0.06);border:1px solid rgba(22,163,74,0.14)}
+.finding.warn{background:rgba(217,119,6,0.06);border:1px solid rgba(217,119,6,0.16)}
+.finding.bad{background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.16)}
+.finding-ico{font-size:14px;flex-shrink:0;margin-top:1px}
+.finding-lbl{font-weight:700;font-size:11.5px;margin-bottom:2px}
+.finding-txt{color:var(--text2);font-size:11.5px;line-height:1.5}
+
+.conf-wrap{margin-bottom:10px}
+.conf-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px}
+.conf-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.conf-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--brain2));
+  border-radius:3px;transition:width 1.1s cubic-bezier(0.4,0,0.2,1)}
+
+.disclaimer{
+  margin-top:11px;padding:9px 13px;background:rgba(217,119,6,0.06);
+  border-radius:8px;border:1px solid rgba(217,119,6,0.18);
+  font-size:11px;color:var(--warn)}
+
+/* ===== 3D VISUALIZATION ===== */
+.viz-3d-wrap{
+  background:var(--bg3);border-radius:var(--radius2);border:1px solid var(--border);
+  overflow:hidden;min-height:270px;display:flex;flex-direction:column}
+.viz-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 15px;border-bottom:1px solid var(--border);
+  font-size:12px;font-weight:600;color:var(--text2)}
+.viz-canvas{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:18px;position:relative;min-height:200px}
+.viz-empty{text-align:center;color:var(--text3)}
+.viz-empty-icon{font-size:38px;opacity:.2;margin-bottom:8px}
+.seg-legend{
+  display:flex;gap:7px;flex-wrap:wrap;padding:11px 15px;
+  border-top:1px solid var(--border);background:var(--card)}
+.seg-cls{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.seg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* 3D Controls */
+.viz-controls{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+.btn-ctrl{
+  padding:6px 12px;border-radius:8px;
+  background:linear-gradient(135deg,var(--cyan),var(--accent));
+  color:#fff;font-size:11px;font-weight:700;
+  transition:all var(--tr);display:flex;align-items:center;gap:5px}
+.btn-ctrl:hover{opacity:.84;transform:translateY(-1px);box-shadow:0 4px 14px rgba(6,182,212,0.3)}
+.btn-ctrl.secondary{background:var(--bg3);border:1px solid var(--border);color:var(--text2)}
+.btn-ctrl.secondary:hover{background:var(--card2);color:var(--text);box-shadow:none}
+
+/* Print ready note */
+.print-note{
+  background:linear-gradient(135deg,rgba(6,182,212,0.08),rgba(99,102,241,0.06));
+  border:1px solid rgba(6,182,212,0.22);border-radius:9px;
+  padding:10px 13px;font-size:12px;color:var(--cyan2);
+  display:flex;align-items:center;gap:7px;margin-top:10px}
+
+/* ===== PROFILE / MODAL ===== */
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.4);backdrop-filter:blur(5px);
+  align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:var(--card2);border:1px solid var(--border2);border-radius:var(--radius);
+  padding:30px;width:100%;max-width:540px;animation:mIn .28s ease;
+  max-height:90vh;overflow-y:auto;position:relative}
+@keyframes mIn{from{opacity:0;transform:scale(.94) translateY(18px)}to{opacity:1;transform:none}}
+.modal-title{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px}
+.modal-sub{color:var(--text2);font-size:13px;margin-bottom:20px}
+.modal-close{
+  position:absolute;right:18px;top:18px;width:30px;height:30px;
+  display:flex;align-items:center;justify-content:center;border-radius:7px;
+  background:var(--bg3);border:1px solid var(--border);cursor:pointer;
+  color:var(--text2);font-size:15px;transition:all var(--tr)}
+.modal-close:hover{background:var(--card2);color:var(--text)}
+
+/* Form */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11.5px;font-weight:600;color:var(--text2);letter-spacing:.04em}
+.form-input{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:9px 13px;font-size:13.5px;color:var(--text);
+  transition:border var(--tr);width:100%}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,0.09)}
+textarea.form-input{resize:vertical}
+select.form-input option{background:var(--bg2);color:var(--text)}
+.btn-save{
+  width:100%;padding:12px;border-radius:var(--radius2);
+  background:linear-gradient(135deg,var(--accent),var(--brain));
+  color:#fff;font-size:14px;font-weight:600;
+  transition:all var(--tr);display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-save:hover{opacity:.88;transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,0.35)}
+
+/* Profile view */
+.profile-layout{display:grid;grid-template-columns:260px 1fr;gap:18px}
+.profile-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px 20px;text-align:center}
+.profile-avatar-big{
+  width:74px;height:74px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--brain));
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:700;color:#fff;margin:0 auto 14px;box-shadow:var(--glow)}
+.profile-fullname{font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:9px}
+.pill{
+  display:inline-block;background:var(--bg3);border:1px solid var(--border);
+  border-radius:20px;padding:3px 11px;font-size:11.5px;font-weight:500;
+  margin:2px;color:var(--text2)}
+.pstats{display:flex;gap:14px;justify-content:center;margin-top:14px}
+.pstat{text-align:center}
+.pstat-val{font-size:24px;font-weight:700;font-family:'DM Serif Display',serif;color:var(--accent2)}
+.pstat-lbl{font-size:11px;color:var(--text3)}
+.not-reg-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:55px 28px;text-align:center}
+.not-reg-icon{font-size:52px;opacity:.28;margin-bottom:14px}
+.not-reg-title{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:7px}
+.not-reg-sub{color:var(--text2);font-size:13.5px;margin-bottom:22px}
+.btn-reg{
+  padding:11px 26px;border-radius:var(--radius2);
+  background:linear-gradient(135deg,var(--accent),var(--brain));
+  color:#fff;font-size:14px;font-weight:600;
+  transition:all var(--tr)}
+.btn-reg:hover{opacity:.88;box-shadow:0 6px 22px rgba(99,102,241,0.35);transform:translateY(-1px)}
+.form-section{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:22px;margin-bottom:18px}
+.form-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:7px}
+.divider{height:1px;background:var(--border);margin:18px 0}
+
+/* ===== HISTORY ===== */
+.hist-filters{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+.filter-btn{
+  padding:5px 15px;border-radius:20px;font-size:12px;font-weight:600;
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text2);cursor:pointer;transition:all var(--tr)}
+.filter-btn.active{background:rgba(99,102,241,0.12);border-color:var(--accent);color:var(--accent2)}
+.hist-list{display:flex;flex-direction:column;gap:9px}
+.hist-item{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:15px 17px;display:flex;align-items:center;gap:13px;
+  cursor:pointer;transition:all var(--tr)}
+.hist-item:hover{border-color:var(--border2);transform:translateX(3px)}
+.hist-dot{
+  width:38px;height:38px;border-radius:11px;background:rgba(168,85,247,.12);
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.hist-info{flex:1}
+.hist-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.hist-meta{font-size:11.5px;color:var(--text3)}
+.hist-right{text-align:right;flex-shrink:0}
+.hist-conf{font-size:19px;font-weight:700;font-family:'DM Serif Display',serif}
+.hist-date{font-size:11px;color:var(--text3)}
+.hist-empty{text-align:center;padding:50px 20px;color:var(--text3)}
+.hist-empty-icon{font-size:44px;opacity:.22;margin-bottom:10px}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.toast{
+  background:var(--card2);border:1px solid var(--border2);border-radius:var(--radius2);
+  padding:12px 16px;font-size:13px;font-weight:500;
+  display:flex;align-items:center;gap:9px;
+  animation:tIn .3s ease;max-width:310px;box-shadow:var(--shadow)}
+@keyframes tIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.toast.success{border-left:3px solid var(--success)}
+.toast.error{border-left:3px solid var(--danger)}
+.toast.info{border-left:3px solid var(--accent)}
+
+/* Pulse dot */
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}50%{box-shadow:0 0 0 5px rgba(22,163,74,0)}}
+
+/* ===== SIDEBAR OVERLAY (mobile) ===== */
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.5);backdrop-filter:blur(2px)}
+.sidebar-overlay.open{display:block}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1100px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .analysis-grid{grid-template-columns:1fr}
+  .profile-layout{grid-template-columns:1fr}}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:flex}
+  .content{padding:14px}
+  .topbar{padding:0 13px}
+  .welcome-banner{flex-direction:column;gap:11px}
+  .form-row{grid-template-columns:1fr}
+  .page-title{font-size:17px}
+  .lang-toggle{display:none}}
+@media(max-width:480px){.stats-row{grid-template-columns:1fr}}
+</style>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🧠</div>
+    <div>
+      <div class="logo-text">NeuroAI</div>
+      <div class="logo-sub" data-t="logo_sub">Miya Segmentatsiyasi</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-sec" data-t="nav_main">Asosiy</div>
+    <div class="nav-item active" onclick="showSec('dashboard',this)">
+      <span class="nav-icon">🏠</span><span data-t="nav_dashboard">Dashboard</span>
+    </div>
+
+    <div class="nav-sec" data-t="nav_analysis">Tahlil</div>
+    <div class="nav-item" onclick="showSec('brain',this)">
+      <span class="nav-icon">🧠</span><span data-t="nav_brain">Miya Segmentatsiyasi</span>
+      <span class="nav-badge">3D</span>
+    </div>
+    <div class="nav-item" onclick="showSec('results',this)">
+      <span class="nav-icon">📊</span><span data-t="nav_results">Natijalar</span>
+    </div>
+
+    <div class="nav-sec" data-t="nav_personal">Shaxsiy</div>
+    <div class="nav-item" onclick="showSec('profile',this)">
+      <span class="nav-icon">👤</span><span data-t="nav_profile">Profil</span>
+    </div>
+    <div class="nav-item" onclick="showSec('history',this)">
+      <span class="nav-icon">📋</span><span data-t="nav_history">Tahlil Tarixi</span>
+      <span class="nav-badge" id="histBadge">0</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-profile" onclick="showSec('profile',null)">
+      <div class="profile-avatar" id="sbAvatar">?</div>
+      <div>
+        <div class="profile-name" id="sbName" data-t="reg_prompt">Ro'yxatdan o'ting</div>
+        <div class="profile-role" id="sbRole" data-t="patient">Bemor</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="btn-icon hamburger" onclick="openSidebar()">☰</div>
+      <div>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="breadcrumb" id="breadcrumb">NeuroAI / Dashboard</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="clock-pill" id="clockEl">--:--:--</div>
+      <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLang('uz')">UZ</button>
+        <button class="lang-btn" onclick="setLang('ru')">RU</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
+      <div class="btn-icon" onclick="toggleTheme()" id="themeBtn" title="Tema">🌙</div>
+      <div class="btn-icon" onclick="showSec('profile',null)">👤</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ========== DASHBOARD ========== -->
+    <div class="section active" id="sec-dashboard">
+      <div class="welcome-banner">
+        <div>
+          <div class="banner-title" id="welcomeTitle" data-t="welcome">Xush kelibsiz! 👋</div>
+          <div class="banner-sub" data-t="welcome_sub">NeuroAI — miya o'simtasini multi-class segmentatsiya orqali aniqlash va 3D vizualizatsiya platformasi</div>
+        </div>
+        <div class="badge-ai"><div class="pulse-dot"></div><span data-t="ai_on">AI Faol</span></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon">🔬</div>
+          <div class="stat-val" id="stTotal">0</div>
+          <div class="stat-lbl" data-t="st_total">JAMI TAHLILLAR</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🧠</div>
+          <div class="stat-val" id="stBrain">0</div>
+          <div class="stat-lbl" data-t="st_brain">MIYA TAHLILLARI</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🌐</div>
+          <div class="stat-val" id="st3d">0</div>
+          <div class="stat-lbl" data-t="st_3d">3D MODELLAR</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-val" id="stToday">0</div>
+          <div class="stat-lbl" data-t="st_today">BUGUNGI</div>
+        </div>
+      </div>
+
+      <!-- Feature card -->
+      <div class="sec-title" data-t="feat_title">Segmentatsiya Moduli</div>
+      <div class="sec-sub" data-t="feat_sub">MRI/CT tasviri asosida miya o'simtasini ko'p sinf bo'yicha aniqlash va 3D model yaratish</div>
+
+      <div style="background:var(--card);border:1px solid rgba(168,85,247,0.25);border-radius:var(--radius);padding:26px 22px;margin-bottom:26px;cursor:pointer;transition:all var(--tr);display:flex;gap:22px;align-items:center;position:relative;overflow:hidden;" onclick="showSec('brain',null)" onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='var(--shadow)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+        <div style="width:80px;height:80px;background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.3);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:42px;flex-shrink:0;">🧠</div>
+        <div style="flex:1;">
+          <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:7px;" data-t="hero_title">Miya O'simtasi Multi-class Segmentatsiyasi</div>
+          <div style="color:var(--text2);font-size:13px;line-height:1.7;margin-bottom:12px;" data-t="hero_desc">MRI yoki CT tasvirni yuklang. AI modeli o'simtani ko'p sinf bo'yicha segmentatsiya qiladi — nekroz, shish, sog'lom to'qima va boshqalarni ajratib 3D vizualizatsiya yaratadi.</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+            <span style="font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(168,85,247,.1);color:var(--brain2);">Multi-class Segmentatsiya</span>
+            <span style="font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(168,85,247,.1);color:var(--brain2);">MRI / CT / DICOM</span>
+            <span style="font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(168,85,247,.1);color:var(--brain2);">3D Vizualizatsiya</span>
+            <span style="font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(6,182,212,.1);color:var(--cyan2);">STL Export</span>
+          </div>
+        </div>
+        <div style="font-size:22px;color:var(--brain2);opacity:.5;transition:all var(--tr);" class="hero-arrow">↗</div>
+      </div>
+
+      <!-- Segmentation classes info -->
+      <div class="sec-title" data-t="classes_title">Segmentatsiya Sinflari</div>
+      <div class="sec-sub" data-t="classes_sub">Model quyidagi to'qima sinflarini ajratib tahlil qiladi</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:26px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 14px;">
+          <div style="width:10px;height:10px;border-radius:3px;background:#a855f7;margin-bottom:8px;"></div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:3px;" data-t="cls_tumor">O'sma yadrosi</div>
+          <div style="font-size:11.5px;color:var(--text3);" data-t="cls_tumor_d">Aktiv o'simta hujayralari</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 14px;">
+          <div style="width:10px;height:10px;border-radius:3px;background:#ef4444;margin-bottom:8px;"></div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:3px;" data-t="cls_necro">Nekroz</div>
+          <div style="font-size:11.5px;color:var(--text3);" data-t="cls_necro_d">O'lik to'qima zonasi</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 14px;">
+          <div style="width:10px;height:10px;border-radius:3px;background:#06b6d4;margin-bottom:8px;"></div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:3px;" data-t="cls_edema">Shish (Edema)</div>
+          <div style="font-size:11.5px;color:var(--text3);" data-t="cls_edema_d">Perifokal shish hududi</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 14px;">
+          <div style="width:10px;height:10px;border-radius:3px;background:#22c55e;margin-bottom:8px;"></div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:3px;" data-t="cls_healthy">Sog'lom to'qima</div>
+          <div style="font-size:11.5px;color:var(--text3);" data-t="cls_healthy_d">Normal miya parenximasi</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 14px;">
+          <div style="width:10px;height:10px;border-radius:3px;background:#3b82f6;margin-bottom:8px;"></div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:3px;" data-t="cls_vent">Qorinchalar</div>
+          <div style="font-size:11.5px;color:var(--text3);" data-t="cls_vent_d">Miya qorincha tizimi</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 14px;">
+          <div style="width:10px;height:10px;border-radius:3px;background:#f59e0b;margin-bottom:8px;"></div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:3px;" data-t="cls_enhanc">Enhancing o'sma</div>
+          <div style="font-size:11.5px;color:var(--text3);" data-t="cls_enhanc_d">Kontrastli boyitilgan zona</div>
+        </div>
+      </div>
+
+      <div class="sec-title" data-t="recent_title">Oxirgi Tahlillar</div>
+      <div id="dashHistory">
+        <div class="hist-empty">
+          <div class="hist-empty-icon">📭</div>
+          <div style="font-size:13.5px;" data-t="no_hist">Hali tahlil amalga oshirilmagan</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== BRAIN ANALYSIS ========== -->
+    <div class="section" id="sec-brain">
+      <div class="welcome-banner" style="background:linear-gradient(135deg,rgba(168,85,247,.12),rgba(232,121,249,.06));border-color:rgba(168,85,247,.3);">
+        <div>
+          <div class="banner-title" data-t="brain_title">🧠 Miya Segmentatsiya Tahlili</div>
+          <div class="banner-sub" data-t="brain_sub">MRI yoki CT tasvir yuklang — AI model multi-class segmentatsiya qiladi va 3D vizualizatsiya yaratadi</div>
+        </div>
+        <div class="badge-ai" style="background:rgba(168,85,247,.12);border-color:rgba(168,85,247,.35);color:var(--brain2);">🧠 Neyrolog AI · 3D</div>
+      </div>
+
+      <div class="analysis-grid">
+        <!-- LEFT: Upload + Controls -->
+        <div>
+          <div class="acard">
+            <div class="acard-title">📁 <span data-t="upload_lbl">Fayl yuklash</span></div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+
+  <!-- FLAIR -->
+  <div style="background:var(--bg3);border:1.5px dashed rgba(99,102,241,0.4);
+              border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:700;color:var(--brain2);margin-bottom:6px;">
+      🟦 FLAIR <span style="color:var(--danger);">*</span>
+    </div>
+    <input type="file" accept=".nii,.nii.gz" id="fileFlair"
+           style="width:100%;font-size:12px;color:var(--text2);"
+           onchange="handleUpload4(this,'FLAIR')">
+  </div>
+
+  <!-- T1 -->
+  <div style="background:var(--bg3);border:1.5px dashed rgba(99,102,241,0.4);
+              border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;">
+      ⬜ T1 <span style="color:var(--danger);">*</span>
+    </div>
+    <input type="file" accept=".nii,.nii.gz" id="fileT1"
+           style="width:100%;font-size:12px;color:var(--text2);"
+           onchange="handleUpload4(this,'T1')">
+  </div>
+
+  <!-- T1ce -->
+  <div style="background:var(--bg3);border:1.5px dashed rgba(99,102,241,0.4);
+              border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:700;color:var(--cyan2);margin-bottom:6px;">
+      🟩 T1ce <span style="color:var(--danger);">*</span>
+    </div>
+    <input type="file" accept=".nii,.nii.gz" id="fileT1ce"
+           style="width:100%;font-size:12px;color:var(--text2);"
+           onchange="handleUpload4(this,'T1ce')">
+  </div>
+
+  <!-- T2 -->
+  <div style="background:var(--bg3);border:1.5px dashed rgba(99,102,241,0.4);
+              border-radius:10px;padding:12px 14px;">
+    <div style="font-size:12px;font-weight:700;color:var(--warn);margin-bottom:6px;">
+      🟨 T2 <span style="color:var(--danger);">*</span>
+    </div>
+    <input type="file" accept=".nii,.nii.gz" id="fileT2"
+           style="width:100%;font-size:12px;color:var(--text2);"
+           onchange="handleUpload4(this,'T2')">
+  </div>
+
+</div>
+              <div class="upload-icon">🗂️</div>
+              <div class="upload-title" data-t="drop_title">Tasvirni bu yerga tashlang</div>
+              <div class="upload-sub" data-t="drop_sub">yoki bosing · MRI, CT, DICOM, NIfTI, JPG, PNG</div>
+            </div>
+            <div class="upload-preview" id="preview"><img id="previewImg" src="" alt=""></div>
+
+            <div style="margin-top:13px;">
+              <div class="acard-title">🔍 <span data-t="scan_type">Skanerlash turi</span></div>
+              <div class="type-row" id="typeRow">
+                <div class="type-btn active" onclick="selType('MRI T1')">MRI T1</div>
+                <div class="type-btn" onclick="selType('MRI T2')">MRI T2</div>
+                <div class="type-btn" onclick="selType('MRI FLAIR')">FLAIR</div>
+                <div class="type-btn" onclick="selType('CT')">CT Scan</div>
+                <div class="type-btn" onclick="selType('DICOM')">DICOM</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <div class="acard-title">🏷️ <span data-t="seg_classes_lbl">Segmentatsiya sinflari</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px;" id="classChecks">
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12.5px;padding:6px 9px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);">
+                  <input type="checkbox" checked style="accent-color:#a855f7;"> <span style="color:var(--brain2);" data-t="cls_tumor">O'sma yadrosi</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12.5px;padding:6px 9px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);">
+                  <input type="checkbox" checked style="accent-color:#ef4444;"> <span style="color:#ef4444;" data-t="cls_necro">Nekroz</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12.5px;padding:6px 9px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);">
+                  <input type="checkbox" checked style="accent-color:#06b6d4;"> <span style="color:var(--cyan2);" data-t="cls_edema">Shish (Edema)</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12.5px;padding:6px 9px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);">
+                  <input type="checkbox" checked style="accent-color:#22c55e;"> <span style="color:#22c55e;" data-t="cls_healthy">Sog'lom to'qima</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12.5px;padding:6px 9px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);">
+                  <input type="checkbox" checked style="accent-color:#3b82f6;"> <span style="color:#3b82f6;" data-t="cls_vent">Qorinchalar</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12.5px;padding:6px 9px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);">
+                  <input type="checkbox" checked style="accent-color:#f59e0b;"> <span style="color:#f59e0b;" data-t="cls_enhanc">Enhancing o'sma</span>
+                </label>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <div class="acard-title">📝 <span data-t="notes_lbl">Qo'shimcha ma'lumot</span></div>
+              <textarea class="form-input" id="notesInput" rows="2" data-tp="notes_ph"></textarea>
+            </div>
+            <div class="lbar" id="loadBar"><div class="lbar-fill" id="loadFill"></div></div>
+            <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">
+              <span>🧠</span> <span data-t="start_btn">Tahlilni Boshlash</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Results + 3D -->
+        <div>
+          <!-- AI Result -->
+          <div class="acard" style="margin-bottom:18px;">
+            <div class="acard-title">📊 <span data-t="result_lbl">AI Tahlil Natijasi</span></div>
+            <div class="result-area" id="resultArea">
+              <div class="result-empty" id="resultEmpty">
+                <div class="spinner" id="spinner"></div>
+                <div class="result-empty-icon">🧠</div>
+                <div class="result-empty-text" data-t="result_wait">Tahlil natijasi bu yerda ko'rinadi</div>
+              </div>
+              <div class="result-content" id="resultContent"></div>
+            </div>
+          </div>
+
+          <!-- 3D Visualization -->
+          <div class="acard">
+            <div class="acard-title">
+              🌐 <span data-t="viz3d_lbl">3D Segmentatsiya Vizualizatsiyasi</span>
+              <button class="btn-ctrl" id="exportBtn" style="margin-left:auto;display:none;padding:5px 11px;font-size:11px;" onclick="doExport()">
+                📥 STL
+              </button>
+            </div>
+            <div class="viz-3d-wrap" id="viz3dWrap">
+              <div class="viz-header">
+                <span data-t="viz3d_title">Miya 3D Ko'rinishi</span>
+                <span style="font-size:11px;color:var(--text3);" id="vizStatus" data-t="viz_wait_s">Kutilmoqda...</span>
+              </div>
+              <div class="viz-canvas" id="viz3dCanvas">
+                <div class="viz-empty">
+                  <div class="viz-empty-icon">🧠</div>
+                  <div style="font-size:12.5px;" data-t="viz_empty">Tahlildan so'ng 3D model paydo bo'ladi</div>
+                </div>
+              </div>
+              <div class="seg-legend" id="segLegend" style="display:none;">
+                <div class="seg-cls"><div class="seg-dot" style="background:#a855f7;"></div><span data-t="cls_tumor">O'sma yadrosi</span></div>
+                <div class="seg-cls"><div class="seg-dot" style="background:#ef4444;"></div><span data-t="cls_necro">Nekroz</span></div>
+                <div class="seg-cls"><div class="seg-dot" style="background:#06b6d4;"></div><span data-t="cls_edema">Edema</span></div>
+                <div class="seg-cls"><div class="seg-dot" style="background:#22c55e;"></div><span data-t="cls_healthy">Sog'lom</span></div>
+                <div class="seg-cls"><div class="seg-dot" style="background:#3b82f6;"></div><span data-t="cls_vent">Qorincha</span></div>
+                <div class="seg-cls"><div class="seg-dot" style="background:#f59e0b;"></div><span data-t="cls_enhanc">Enhancing</span></div>
+              </div>
+            </div>
+            <div class="viz-controls" id="vizControls" style="display:none;">
+              <button class="btn-ctrl" onclick="rotateAnim()">⟳ <span data-t="rotate">Aylantirish</span></button>
+              <button class="btn-ctrl secondary" onclick="resetRot()">↺ <span data-t="reset_v">Qayta</span></button>
+              <button class="btn-ctrl" onclick="doExport()">📥 <span data-t="stl_exp">STL Export</span></button>
+            </div>
+            <div class="print-note" id="printNote" style="display:none;">
+              🖨️ <span data-t="print_ready">3D model tayyor — STL formatda eksport qiling va 3D printerda chop eting</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== RESULTS ========== -->
+    <div class="section" id="sec-results">
+      <div class="welcome-banner" style="background:linear-gradient(135deg,rgba(99,102,241,.10),rgba(6,182,212,.06));border-color:rgba(99,102,241,.25);">
+        <div>
+          <div class="banner-title" data-t="results_title">📊 Segmentatsiya Natijalari</div>
+          <div class="banner-sub" data-t="results_sub">Oxirgi tahlil natijalari va to'qima taqsimoti</div>
+        </div>
+      </div>
+
+      <div id="resultsMain">
+        <div class="hist-empty">
+          <div class="hist-empty-icon">📊</div>
+          <div style="font-size:13.5px;" data-t="no_results">Hali natija yo'q — avval tahlil o'tkazing</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== PROFILE ========== -->
+    <div class="section" id="sec-profile">
+      <div class="welcome-banner" style="background:linear-gradient(135deg,rgba(99,102,241,.10),rgba(99,102,241,.05));">
+        <div>
+          <div class="banner-title" data-t="profile_title">👤 Profil</div>
+          <div class="banner-sub" data-t="profile_sub">Shaxsiy va tibbiy ma'lumotlaringiz</div>
+        </div>
+      </div>
+      <div id="profileNot">
+        <div class="not-reg-card">
+          <div class="not-reg-icon">👤</div>
+          <div class="not-reg-title" data-t="not_reg_t">Profil yaratilmagan</div>
+          <div class="not-reg-sub" data-t="not_reg_s">To'liq imkoniyatlardan foydalanish uchun profil yarating</div>
+          <button class="btn-reg" onclick="openModal()" data-t="register">Ro'yxatdan O'tish</button>
+        </div>
+      </div>
+      <div id="profileYes" style="display:none;">
+        <div class="profile-layout">
+          <div>
+            <div class="profile-card">
+              <div class="profile-avatar-big" id="profAvBig">?</div>
+              <div class="profile-fullname" id="profFull">—</div>
+              <div style="margin-top:8px;">
+                <span class="pill" id="profAge"></span>
+                <span class="pill" id="profGender"></span>
+                <span class="pill" id="profBlood"></span>
+              </div>
+              <div class="pstats">
+                <div class="pstat"><div class="pstat-val" id="ps1">0</div><div class="pstat-lbl" data-t="total_an">Jami</div></div>
+                <div class="pstat"><div class="pstat-val" id="ps2">0</div><div class="pstat-lbl" data-t="days_lbl">Kun</div></div>
+              </div>
+              <div class="divider"></div>
+              <button class="btn-save" onclick="openModal()">✏️ <span data-t="edit_lbl">Tahrirlash</span></button>
+            </div>
+          </div>
+          <div>
+            <div class="form-section">
+              <div class="form-title" data-t="prof_data">👤 Profil Ma'lumotlari</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;">
+                <div><div class="form-label" data-t="ln">Familiya</div><div class="form-input" style="background:var(--bg3);cursor:default;" id="vLn">—</div></div>
+                <div><div class="form-label" data-t="fn">Ism</div><div class="form-input" style="background:var(--bg3);cursor:default;" id="vFn">—</div></div>
+                <div><div class="form-label" data-t="mn">Sharif</div><div class="form-input" style="background:var(--bg3);cursor:default;" id="vMn">—</div></div>
+                <div><div class="form-label" data-t="age_lbl">Yoshi</div><div class="form-input" style="background:var(--bg3);cursor:default;" id="vAge">—</div></div>
+                <div><div class="form-label" data-t="gender_lbl">Jinsi</div><div class="form-input" style="background:var(--bg3);cursor:default;" id="vGender">—</div></div>
+                <div><div class="form-label" data-t="blood_lbl">Qon guruhi</div><div class="form-input" style="background:var(--bg3);cursor:default;" id="vBlood">—</div></div>
+                <div style="grid-column:1/-1;"><div class="form-label" data-t="phone_lbl">Telefon</div><div class="form-input" style="background:var(--bg3);cursor:default;" id="vPhone">—</div></div>
+              </div>
+              <div class="divider"></div>
+              <div class="form-title" style="font-size:13.5px;">⚕️ <span data-t="med_data">Tibbiy Ma'lumotlar</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;">
+                <div><div class="form-label" data-t="height_lbl">Bo'yi (sm)</div><div class="form-input" style="background:var(--bg3);cursor:default;" id="vH">—</div></div>
+                <div><div class="form-label" data-t="weight_lbl">Vazni (kg)</div><div class="form-input" style="background:var(--bg3);cursor:default;" id="vW">—</div></div>
+                <div style="grid-column:1/-1;"><div class="form-label" data-t="cond_lbl">Surunkali kasalliklar</div><div class="form-input" style="background:var(--bg3);cursor:default;min-height:38px;" id="vCond">—</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== HISTORY ========== -->
+    <div class="section" id="sec-history">
+      <div class="welcome-banner" style="background:linear-gradient(135deg,rgba(99,102,241,.10),rgba(99,102,241,.05));">
+        <div>
+          <div class="banner-title" data-t="hist_title">📋 Tahlil Tarixi</div>
+          <div class="banner-sub" data-t="hist_sub">Barcha o'tkazilgan miya tahlillaringiz</div>
+        </div>
+        <div style="font-size:26px;font-weight:700;font-family:'DM Serif Display',serif;" id="histCount">0</div>
+      </div>
+      <div class="hist-filters">
+        <div class="filter-btn active" onclick="filterH('all',this)" data-t="f_all">Barchasi</div>
+        <div class="filter-btn" onclick="filterH('brain',this)">🧠 <span data-t="f_brain">Miya</span></div>
+      </div>
+      <div class="hist-list" id="histList">
+        <div class="hist-empty"><div class="hist-empty-icon">📭</div><div data-t="no_hist">Hali tahlil amalga oshirilmagan</div></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-title" data-t="modal_t">Ro'yxatdan O'tish</div>
+    <div class="modal-sub" data-t="modal_s">Shaxsiy ma'lumotlaringizni kiriting</div>
+    <div class="modal-close" onclick="closeModal()">✕</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label" data-t="ln">Familiya *</label><input class="form-input" id="iLn" type="text" placeholder="Karimov"></div>
+      <div class="form-group"><label class="form-label" data-t="fn">Ism *</label><input class="form-input" id="iFn" type="text" placeholder="Alisher"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label" data-t="mn">Sharif</label><input class="form-input" id="iMn" type="text" placeholder="Baxtiyorovich"></div>
+      <div class="form-group"><label class="form-label" data-t="age_lbl">Yoshi *</label><input class="form-input" id="iAge" type="number" placeholder="32" min="1" max="120"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-t="gender_lbl">Jinsi *</label>
+        <select class="form-input" id="iGender">
+          <option value="" data-t="sel">Tanlang...</option>
+          <option value="Erkak" data-t="male">Erkak</option>
+          <option value="Ayol" data-t="female">Ayol</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-t="blood_lbl">Qon guruhi</label>
+        <select class="form-input" id="iBlood">
+          <option value="" data-t="sel">Tanlang...</option>
+          <option>I(+)</option><option>I(-)</option><option>II(+)</option><option>II(-)</option>
+          <option>III(+)</option><option>III(-)</option><option>IV(+)</option><option>IV(-)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label" data-t="phone_lbl">Telefon</label><input class="form-input" id="iPhone" type="tel" placeholder="+998901234567"></div>
+      <div class="form-group"><label class="form-label" data-t="birth_lbl">Tug'ilgan sana</label><input class="form-input" id="iBirth" type="date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label" data-t="height_lbl">Bo'yi (sm)</label><input class="form-input" id="iH" type="number" placeholder="175"></div>
+      <div class="form-group"><label class="form-label" data-t="weight_lbl">Vazni (kg)</label><input class="form-input" id="iW" type="number" placeholder="70"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:18px;">
+      <label class="form-label" data-t="cond_lbl">Surunkali kasalliklar</label>
+      <textarea class="form-input" id="iCond" rows="2" data-tp="cond_ph"></textarea>
+    </div>
+    <button class="btn-save" onclick="saveProfile()">✅ <span data-t="save_btn">Saqlash</span></button>
+  </div>
+</div>
+
+<div class="toast-container" id="toastBox"></div>
+
+<script>
+// ===================== TRANSLATIONS =====================
+const T = {
+  uz:{
+    logo_sub:'Miya Segmentatsiyasi', nav_main:'Asosiy', nav_dashboard:'Dashboard',
+    nav_analysis:'Tahlil', nav_brain:'Miya Segmentatsiyasi', nav_results:'Natijalar',
+    nav_personal:'Shaxsiy', nav_profile:'Profil', nav_history:'Tahlil Tarixi',
+    reg_prompt:"Ro'yxatdan o'ting", patient:'Bemor',
+    welcome:'Xush kelibsiz! 👋',
+    welcome_sub:"NeuroAI — miya o'simtasini multi-class segmentatsiya orqali aniqlash va 3D vizualizatsiya platformasi",
+    ai_on:'AI Faol',
+    st_total:'JAMI TAHLILLAR', st_brain:'MIYA TAHLILLARI', st_3d:'3D MODELLAR', st_today:'BUGUNGI',
+    feat_title:'Segmentatsiya Moduli',
+    feat_sub:"MRI/CT tasviri asosida miya o'simtasini ko'p sinf bo'yicha aniqlash va 3D model yaratish",
+    hero_title:"Miya O'simtasi Multi-class Segmentatsiyasi",
+    hero_desc:"MRI yoki CT tasvirni yuklang. AI modeli o'simtani ko'p sinf bo'yicha segmentatsiya qiladi — nekroz, shish, sog'lom to'qima va boshqalarni ajratib 3D vizualizatsiya yaratadi.",
+    classes_title:'Segmentatsiya Sinflari',
+    classes_sub:"Model quyidagi to'qima sinflarini ajratib tahlil qiladi",
+    cls_tumor:"O'sma yadrosi", cls_tumor_d:"Aktiv o'simta hujayralari",
+    cls_necro:'Nekroz', cls_necro_d:"O'lik to'qima zonasi",
+    cls_edema:'Shish (Edema)', cls_edema_d:'Perifokal shish hududi',
+    cls_healthy:"Sog'lom to'qima", cls_healthy_d:"Normal miya parenximasi",
+    cls_vent:'Qorinchalar', cls_vent_d:'Miya qorincha tizimi',
+    cls_enhanc:"Enhancing o'sma", cls_enhanc_d:'Kontrastli boyitilgan zona',
+    recent_title:'Oxirgi Tahlillar', no_hist:'Hali tahlil amalga oshirilmagan',
+    brain_title:'🧠 Miya Segmentatsiya Tahlili',
+    brain_sub:"MRI yoki CT tasvir yuklang — AI model multi-class segmentatsiya qiladi va 3D vizualizatsiya yaratadi",
+    upload_lbl:'Fayl yuklash', drop_title:'Tasvirni bu yerga tashlang',
+    drop_sub:'yoki bosing · MRI, CT, DICOM, NIfTI, JPG, PNG',
+    scan_type:'Skanerlash turi', seg_classes_lbl:'Segmentatsiya sinflari',
+    notes_lbl:"Qo'shimcha ma'lumot", notes_ph:"Simptomlar, shikoyatlar...",
+    start_btn:'Tahlilni Boshlash', result_lbl:'AI Tahlil Natijasi',
+    result_wait:"Tahlil natijasi bu yerda ko'rinadi",
+    viz3d_lbl:'3D Segmentatsiya Vizualizatsiyasi', viz3d_title:"Miya 3D Ko'rinishi",
+    viz_wait_s:'Kutilmoqda...', viz_empty:"Tahlildan so'ng 3D model paydo bo'ladi",
+    rotate:'Aylantirish', reset_v:'Qayta', stl_exp:'STL Export',
+    print_ready:"3D model tayyor — STL formatda eksport qiling va 3D printerda chop eting",
+    results_title:'📊 Segmentatsiya Natijalari',
+    results_sub:"Oxirgi tahlil natijalari va to'qima taqsimoti",
+    no_results:"Hali natija yo'q — avval tahlil o'tkazing",
+    profile_title:'👤 Profil', profile_sub:"Shaxsiy va tibbiy ma'lumotlaringiz",
+    not_reg_t:'Profil yaratilmagan',
+    not_reg_s:"To'liq imkoniyatlardan foydalanish uchun profil yarating",
+    register:"Ro'yxatdan O'tish",
+    total_an:'Jami', days_lbl:'Kun', edit_lbl:'Tahrirlash',
+    prof_data:"Profil Ma'lumotlari", med_data:"Tibbiy Ma'lumotlar",
+    ln:'Familiya', fn:'Ism', mn:'Sharif', age_lbl:'Yoshi',
+    gender_lbl:'Jinsi', blood_lbl:'Qon guruhi', phone_lbl:'Telefon',
+    birth_lbl:"Tug'ilgan sana", height_lbl:"Bo'yi (sm)", weight_lbl:'Vazni (kg)',
+    cond_lbl:'Surunkali kasalliklar', cond_ph:'Diabet, gipertoniya...',
+    sel:'Tanlang...', male:'Erkak', female:'Ayol', save_btn:'Saqlash',
+    hist_title:'📋 Tahlil Tarixi',
+    hist_sub:"Barcha o'tkazilgan miya tahlillaringiz",
+    f_all:'Barchasi', f_brain:'Miya',
+    modal_t:"Ro'yxatdan O'tish", modal_s:"Shaxsiy ma'lumotlaringizni kiriting",
+    analyzing:'Tahlil qilinmoqda...', ai_work:'AI model ishlamoqda...',
+    reanalyze:'Qayta Tahlil', conf_lbl:'AI Ishonch darajasi',
+    discl:"⚕️ Bu natija faqat ma'lumot uchun. Aniq tashxis uchun mutaxassis neyroximoyagga murojaat qiling.",
+    file_up:'Fayl yuklandi', prof_saved:'Profil saqlandi ✅',
+    fill_req:"Majburiy maydonlarni to'ldiring!",
+    an_done:'Tahlil yakunlandi', exprt_done:'STL eksport tayyor',
+    age_p:'yosh', gender_p:'Jinsi', blood_p:'Qon',
+    nav_bc:'NeuroAI',
+  },
+  ru:{
+    logo_sub:'Сегментация Мозга', nav_main:'Главная', nav_dashboard:'Дашборд',
+    nav_analysis:'Анализ', nav_brain:'Сегментация Мозга', nav_results:'Результаты',
+    nav_personal:'Личное', nav_profile:'Профиль', nav_history:'История',
+    reg_prompt:'Зарегистрироваться', patient:'Пациент',
+    welcome:'Добро пожаловать! 👋',
+    welcome_sub:'NeuroAI — платформа мультиклассовой сегментации опухолей мозга и 3D-визуализации',
+    ai_on:'ИИ Активен',
+    st_total:'ВСЕГО АНАЛИЗОВ', st_brain:'АНАЛИЗЫ МОЗГА', st_3d:'3D МОДЕЛИ', st_today:'СЕГОДНЯ',
+    feat_title:'Модуль Сегментации',
+    feat_sub:'Многоклассовое обнаружение опухолей мозга и создание 3D-модели по МРТ/КТ снимкам',
+    hero_title:'Мультиклассовая Сегментация Опухоли Мозга',
+    hero_desc:'Загрузите МРТ или КТ снимок. ИИ-модель выполнит многоклассовую сегментацию — некроз, отёк, здоровая ткань и другие классы с созданием 3D-визуализации.',
+    classes_title:'Классы Сегментации',
+    classes_sub:'Модель выделяет и анализирует следующие классы тканей',
+    cls_tumor:'Ядро опухоли', cls_tumor_d:'Активные опухолевые клетки',
+    cls_necro:'Некроз', cls_necro_d:'Зона отмершей ткани',
+    cls_edema:'Отёк (Эдема)', cls_edema_d:'Зона перифокального отёка',
+    cls_healthy:'Здоровая ткань', cls_healthy_d:'Нормальная паренхима мозга',
+    cls_vent:'Желудочки', cls_vent_d:'Желудочковая система мозга',
+    cls_enhanc:'Enhancing опухоль', cls_enhanc_d:'Зона с контрастным усилением',
+    recent_title:'Последние Анализы', no_hist:'Анализы ещё не проводились',
+    brain_title:'🧠 Анализ Сегментации Мозга',
+    brain_sub:'Загрузите МРТ или КТ снимок — ИИ-модель выполнит мультиклассовую сегментацию и создаст 3D-визуализацию',
+    upload_lbl:'Загрузка файла', drop_title:'Перетащите изображение сюда',
+    drop_sub:'или нажмите · МРТ, КТ, DICOM, NIfTI, JPG, PNG',
+    scan_type:'Тип сканирования', seg_classes_lbl:'Классы сегментации',
+    notes_lbl:'Дополнительная информация', notes_ph:'Симптомы, жалобы...',
+    start_btn:'Начать Анализ', result_lbl:'Результат ИИ-анализа',
+    result_wait:'Результат анализа появится здесь',
+    viz3d_lbl:'3D Визуализация Сегментации', viz3d_title:'3D Вид Мозга',
+    viz_wait_s:'Ожидание...', viz_empty:'3D модель появится после анализа',
+    rotate:'Вращать', reset_v:'Сброс', stl_exp:'Экспорт STL',
+    print_ready:'3D модель готова — экспортируйте в STL и распечатайте на 3D-принтере',
+    results_title:'📊 Результаты Сегментации',
+    results_sub:'Последние результаты анализа и распределение тканей',
+    no_results:'Нет результатов — сначала выполните анализ',
+    profile_title:'👤 Профиль', profile_sub:'Ваши личные и медицинские данные',
+    not_reg_t:'Профиль не создан',
+    not_reg_s:'Создайте профиль для использования всех возможностей',
+    register:'Зарегистрироваться',
+    total_an:'Всего', days_lbl:'Дней', edit_lbl:'Редактировать',
+    prof_data:'Данные профиля', med_data:'Медицинские данные',
+    ln:'Фамилия', fn:'Имя', mn:'Отчество', age_lbl:'Возраст',
+    gender_lbl:'Пол', blood_lbl:'Группа крови', phone_lbl:'Телефон',
+    birth_lbl:'Дата рождения', height_lbl:'Рост (см)', weight_lbl:'Вес (кг)',
+    cond_lbl:'Хронические заболевания', cond_ph:'Диабет, гипертония...',
+    sel:'Выберите...', male:'Мужской', female:'Женский', save_btn:'Сохранить',
+    hist_title:'📋 История Анализов',
+    hist_sub:'Все ваши анализы мозга',
+    f_all:'Все', f_brain:'Мозг',
+    modal_t:'Регистрация', modal_s:'Введите свои личные данные',
+    analyzing:'Анализ выполняется...', ai_work:'ИИ-модель работает...',
+    reanalyze:'Повторный Анализ', conf_lbl:'Уровень доверия ИИ',
+    discl:'⚕️ Результат носит информационный характер. Для точного диагноза обратитесь к нейрохирургу.',
+    file_up:'Файл загружен', prof_saved:'Профиль сохранён ✅',
+    fill_req:'Заполните обязательные поля!',
+    an_done:'Анализ завершён', exprt_done:'STL файл готов',
+    age_p:'лет', gender_p:'Пол', blood_p:'Кровь',
+    nav_bc:'NeuroAI',
+  },
+  en:{
+    logo_sub:'Brain Segmentation', nav_main:'Main', nav_dashboard:'Dashboard',
+    nav_analysis:'Analysis', nav_brain:'Brain Segmentation', nav_results:'Results',
+    nav_personal:'Personal', nav_profile:'Profile', nav_history:'History',
+    reg_prompt:'Register', patient:'Patient',
+    welcome:'Welcome! 👋',
+    welcome_sub:'NeuroAI — Brain tumor multi-class segmentation and 3D visualization platform',
+    ai_on:'AI Active',
+    st_total:'TOTAL ANALYSES', st_brain:'BRAIN ANALYSES', st_3d:'3D MODELS', st_today:'TODAY',
+    feat_title:'Segmentation Module',
+    feat_sub:'Multi-class brain tumor detection and 3D model creation from MRI/CT images',
+    hero_title:'Brain Tumor Multi-class Segmentation',
+    hero_desc:'Upload MRI or CT image. The AI model performs multi-class segmentation — separating necrosis, edema, healthy tissue and other classes with 3D visualization.',
+    classes_title:'Segmentation Classes',
+    classes_sub:'The model separates and analyzes the following tissue classes',
+    cls_tumor:'Tumor core', cls_tumor_d:'Active tumor cells',
+    cls_necro:'Necrosis', cls_necro_d:'Dead tissue zone',
+    cls_edema:'Edema', cls_edema_d:'Perifocal edema region',
+    cls_healthy:'Healthy tissue', cls_healthy_d:'Normal brain parenchyma',
+    cls_vent:'Ventricles', cls_vent_d:'Brain ventricular system',
+    cls_enhanc:'Enhancing tumor', cls_enhanc_d:'Contrast-enhanced region',
+    recent_title:'Recent Analyses', no_hist:'No analyses performed yet',
+    brain_title:'🧠 Brain Segmentation Analysis',
+    brain_sub:'Upload MRI or CT image — AI model performs multi-class segmentation and creates 3D visualization',
+    upload_lbl:'Upload File', drop_title:'Drop image here',
+    drop_sub:'or click to browse · MRI, CT, DICOM, NIfTI, JPG, PNG',
+    scan_type:'Scan Type', seg_classes_lbl:'Segmentation Classes',
+    notes_lbl:'Additional Information', notes_ph:'Symptoms, complaints...',
+    start_btn:'Start Analysis', result_lbl:'AI Analysis Result',
+    result_wait:'Analysis result will appear here',
+    viz3d_lbl:'3D Segmentation Visualization', viz3d_title:'Brain 3D View',
+    viz_wait_s:'Waiting...', viz_empty:'3D model will appear after analysis',
+    rotate:'Rotate', reset_v:'Reset', stl_exp:'STL Export',
+    print_ready:'3D model ready — export as STL and print on your 3D printer',
+    results_title:'📊 Segmentation Results',
+    results_sub:'Latest analysis results and tissue distribution',
+    no_results:'No results yet — perform analysis first',
+    profile_title:'👤 Profile', profile_sub:'Your personal and medical information',
+    not_reg_t:'Profile not created',
+    not_reg_s:'Create a profile to use all features',
+    register:'Register',
+    total_an:'Total', days_lbl:'Days', edit_lbl:'Edit',
+    prof_data:'Profile Data', med_data:'Medical Data',
+    ln:'Last Name', fn:'First Name', mn:'Middle Name', age_lbl:'Age',
+    gender_lbl:'Gender', blood_lbl:'Blood Type', phone_lbl:'Phone',
+    birth_lbl:'Birth Date', height_lbl:'Height (cm)', weight_lbl:'Weight (kg)',
+    cond_lbl:'Chronic conditions', cond_ph:'Diabetes, hypertension...',
+    sel:'Select...', male:'Male', female:'Female', save_btn:'Save',
+    hist_title:'📋 Analysis History',
+    hist_sub:'All your brain analyses',
+    f_all:'All', f_brain:'Brain',
+    modal_t:'Registration', modal_s:'Enter your personal information',
+    analyzing:'Analyzing...', ai_work:'AI model is working...',
+    reanalyze:'Re-analyze', conf_lbl:'AI Confidence Level',
+    discl:'⚕️ This result is informational only. For accurate diagnosis consult a neurosurgeon.',
+    file_up:'File uploaded', prof_saved:'Profile saved ✅',
+    fill_req:'Please fill in required fields!',
+    an_done:'Analysis completed', exprt_done:'STL export ready',
+    age_p:'years', gender_p:'Gender', blood_p:'Blood',
+    nav_bc:'NeuroAI',
+  }
+};
+
+// ===================== STATE =====================
+const S = {
+  user: JSON.parse(localStorage.getItem('nai_user')||'null'),
+  history: JSON.parse(localStorage.getItem('nai_hist')||'[]'),
+  lang: localStorage.getItem('nai_lang')||'uz',
+  theme: localStorage.getItem('nai_theme')||'light',
+  scanType: 'MRI T1',
+  sec: 'dashboard',
+  running: false,
+  has3d: false,
+  lastResult: null,
+};
+
+// Apply saved settings
+document.documentElement.setAttribute('data-theme', S.theme);
+updateThemeBtn();
+
+// ===================== LANGUAGE =====================
+function t(k){ return T[S.lang][k] || T.uz[k] || k }
+
+function setLang(l){
+  S.lang = l;
+  localStorage.setItem('nai_lang', l);
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent===l.toUpperCase()));
+  applyT();
+  updateSb();
+  renderDash();
+  renderHist('all');
+  if(S.lastResult) renderResultsPage();
+}
+
+function applyT(){
+  document.querySelectorAll('[data-t]').forEach(el=>{
+    const k=el.getAttribute('data-t');
+    if(T[S.lang][k]) el.textContent=T[S.lang][k];
+  });
+  document.querySelectorAll('[data-tp]').forEach(el=>{
+    const k=el.getAttribute('data-tp');
+    if(T[S.lang][k]) el.placeholder=T[S.lang][k];
+  });
+  // page title/bc
+  const meta=secMeta[S.sec];
+  if(meta){ document.getElementById('pageTitle').textContent=meta.title(); document.getElementById('breadcrumb').textContent=meta.bc(); }
+  // modal gender options
+  const g=document.getElementById('iGender');
+  if(g&&g.options.length>=3){g.options[0].text=t('sel');g.options[1].text=t('male');g.options[2].text=t('female');}
+}
+
+// ===================== CLOCK =====================
+function tick(){
+  const now=new Date();
+  document.getElementById('clockEl').textContent=now.toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Tashkent'});
+}
+tick(); setInterval(tick,1000);
+
+// ===================== THEME =====================
+function toggleTheme(){
+  S.theme = S.theme==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',S.theme);
+  localStorage.setItem('nai_theme',S.theme);
+  updateThemeBtn();
+}
+function updateThemeBtn(){
+  document.getElementById('themeBtn').textContent = S.theme==='light'?'🌙':'☀️';
+}
+
+// ===================== NAVIGATION =====================
+const secMeta={
+  dashboard:{ title:()=>'Dashboard', bc:()=>`${t('nav_bc')} / Dashboard` },
+  brain:    { title:()=>'🧠 '+t('nav_brain'), bc:()=>`${t('nav_bc')} / ${t('nav_brain')}` },
+  results:  { title:()=>'📊 '+t('nav_results'), bc:()=>`${t('nav_bc')} / ${t('nav_results')}` },
+  profile:  { title:()=>'👤 '+t('nav_profile'), bc:()=>`${t('nav_bc')} / ${t('nav_profile')}` },
+  history:  { title:()=>'📋 '+t('nav_history'), bc:()=>`${t('nav_bc')} / ${t('nav_history')}` },
+};
+
+function showSec(id, navEl){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(navEl) navEl.classList.add('active');
+  const m=secMeta[id];
+  document.getElementById('pageTitle').textContent=m.title();
+  document.getElementById('breadcrumb').textContent=m.bc();
+  S.sec=id;
+  closeSidebar();
+  if(id==='dashboard') renderDash();
+  if(id==='profile') renderProfile();
+  if(id==='history') renderHist('all');
+  if(id==='results') renderResultsPage();
+}
+
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('open'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('open'); }
+
+// ===================== MODAL =====================
+function openModal(){
+  if(S.user){
+    document.getElementById('iLn').value=S.user.ln||'';
+    document.getElementById('iFn').value=S.user.fn||'';
+    document.getElementById('iMn').value=S.user.mn||'';
+    document.getElementById('iAge').value=S.user.age||'';
+    document.getElementById('iGender').value=S.user.gender||'';
+    document.getElementById('iBlood').value=S.user.blood||'';
+    document.getElementById('iPhone').value=S.user.phone||'';
+    document.getElementById('iH').value=S.user.h||'';
+    document.getElementById('iW').value=S.user.w||'';
+    document.getElementById('iCond').value=S.user.cond||'';
+    document.getElementById('iBirth').value=S.user.birth||'';
+  }
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+
+function saveProfile(){
+  const ln=document.getElementById('iLn').value.trim();
+  const fn=document.getElementById('iFn').value.trim();
+  const age=document.getElementById('iAge').value.trim();
+  const gender=document.getElementById('iGender').value;
+  if(!ln||!fn||!age||!gender){ toast(t('fill_req'),'error'); return; }
+  S.user={
+    ln,fn,mn:document.getElementById('iMn').value.trim(),
+    age,gender,blood:document.getElementById('iBlood').value,
+    phone:document.getElementById('iPhone').value.trim(),
+    h:document.getElementById('iH').value.trim(),
+    w:document.getElementById('iW').value.trim(),
+    cond:document.getElementById('iCond').value.trim(),
+    birth:document.getElementById('iBirth').value,
+    regDate:new Date().toISOString()
+  };
+  localStorage.setItem('nai_user',JSON.stringify(S.user));
+  closeModal(); updateSb(); renderProfile();
+  toast(t('prof_saved'),'success');
+}
+
+function updateSb(){
+  if(S.user){
+    const ini=(S.user.fn[0]||'')+(S.user.ln[0]||'');
+    document.getElementById('sbAvatar').textContent=ini.toUpperCase();
+    document.getElementById('sbName').textContent=S.user.fn+' '+S.user.ln;
+    document.getElementById('sbRole').textContent=S.user.age+' '+t('age_p')+' · '+S.user.gender;
+    document.getElementById('welcomeTitle').textContent=t('welcome').replace('!',', '+S.user.fn+'!');
+  }
+}
+
+function renderProfile(){
+  if(!S.user){
+    document.getElementById('profileNot').style.display='';
+    document.getElementById('profileYes').style.display='none'; return;
+  }
+  document.getElementById('profileNot').style.display='none';
+  document.getElementById('profileYes').style.display='';
+  const u=S.user;
+  const full=[u.ln,u.fn,u.mn].filter(Boolean).join(' ');
+  const ini=(u.fn[0]||'')+(u.ln[0]||'');
+  document.getElementById('profAvBig').textContent=ini.toUpperCase();
+  document.getElementById('profFull').textContent=full;
+  document.getElementById('profAge').textContent=t('age_p')+': '+u.age;
+  document.getElementById('profGender').textContent=t('gender_p')+': '+u.gender;
+  document.getElementById('profBlood').textContent=t('blood_p')+': '+(u.blood||'—');
+  document.getElementById('vLn').textContent=u.ln||'—';
+  document.getElementById('vFn').textContent=u.fn||'—';
+  document.getElementById('vMn').textContent=u.mn||'—';
+  document.getElementById('vAge').textContent=u.age||'—';
+  document.getElementById('vGender').textContent=u.gender||'—';
+  document.getElementById('vBlood').textContent=u.blood||'—';
+  document.getElementById('vPhone').textContent=u.phone||'—';
+  document.getElementById('vH').textContent=u.h?u.h+' sm':'—';
+  document.getElementById('vW').textContent=u.w?u.w+' kg':'—';
+  document.getElementById('vCond').textContent=u.cond||'—';
+  document.getElementById('ps1').textContent=S.history.length;
+  const days=Math.floor((Date.now()-new Date(u.regDate).getTime())/86400000);
+  document.getElementById('ps2').textContent=days;
+}
+
+// ===================== FILE UPLOAD =====================
+function handleUpload(input){
+  const file=input.files[0]; if(!file) return;
+  const preview=document.getElementById('preview');
+  const img=document.getElementById('previewImg');
+  if(file.type.startsWith('image/')){
+    const r=new FileReader();
+    r.onload=e=>{img.src=e.target.result;img.style.display='';preview.style.display=''};
+    r.readAsDataURL(file);
+  } else {
+    preview.style.display=''; img.style.display='none';
+    let d=preview.querySelector('.pdf-pr');
+    if(!d){d=document.createElement('div');d.className='pdf-pr';d.style.cssText='background:var(--bg3);padding:18px;display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text2);';preview.appendChild(d);}
+    d.innerHTML='📄 '+file.name;
+  }
+  toast(t('file_up')+': '+file.name,'info');
+}
+
+// Drag & drop
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f){const dt=new DataTransfer();dt.items.add(f);document.getElementById('fileInput').files=dt.files;handleUpload(document.getElementById('fileInput'));}
+});
+
+function selType(v){
+  S.scanType=v;
+  document.querySelectorAll('#typeRow .type-btn').forEach(b=>b.classList.toggle('active',b.textContent===v));
+}
+
+// ===================== AI ANALYSIS DATA =====================
+const analysisPool = [
+  { status:'attention',
+    lbl:{uz:"Ehtiyot bo'l",ru:'Внимание',en:'Attention'},
+    findings:{
+      uz:[
+        {t:'warn', lbl:"O'sma aniqlandi",   txt:'Chap temporal lobda 18×22mm giperintensiv zona — o\'sma shubhasi (WHO Grade II–III)'},
+        {t:'warn', lbl:'Perifokal shish',    txt:'O\'sma atrofida 8mm edema zonasi, T2 rejimida gipersinyal'},
+        {t:'warn', lbl:'Enhancing zona',     txt:'Kontrastda 12×14mm boyitilgan hududlar — aktiv o\'sma komponenti'},
+        {t:'normal',lbl:"Qon ta'minoti",     txt:'Asosiy tomirlar patenentligi saqlanmoqda'},
+        {t:'normal',lbl:'Qorinchalar',       txt:'Lateral qorinchalar o\'lchamlari normal doirada'},
+        {t:'warn', lbl:'Tavsiya',            txt:'Neyroximoyag konsultatsiyasi va kontrastli MRI tavsiya etiladi'},
+      ],
+      ru:[
+        {t:'warn', lbl:'Опухоль обнаружена', txt:'Гиперинтенсивная зона 18×22мм в левой височной доле — подозрение (WHO Grade II–III)'},
+        {t:'warn', lbl:'Перифокальный отёк', txt:'Зона отёка 8мм вокруг опухоли, гиперсигнал в режиме T2'},
+        {t:'warn', lbl:'Enhancing зона',     txt:'Контрастное усиление 12×14мм — активный компонент опухоли'},
+        {t:'normal',lbl:'Кровоснабжение',    txt:'Проходимость основных сосудов сохранена'},
+        {t:'normal',lbl:'Желудочки',          txt:'Размеры боковых желудочков в норме'},
+        {t:'warn', lbl:'Рекомендация',       txt:'Консультация нейрохирурга и МРТ с контрастом'},
+      ],
+      en:[
+        {t:'warn', lbl:'Tumor detected',     txt:'Hyperintense zone 18×22mm in left temporal lobe — suspicion (WHO Grade II–III)'},
+        {t:'warn', lbl:'Perifocal edema',    txt:'8mm edema zone around tumor, hyperintense on T2'},
+        {t:'warn', lbl:'Enhancing region',   txt:'12×14mm contrast enhancement — active tumor component'},
+        {t:'normal',lbl:'Blood supply',      txt:'Main vessel patency preserved'},
+        {t:'normal',lbl:'Ventricles',        txt:'Lateral ventricle sizes within normal range'},
+        {t:'warn', lbl:'Recommendation',     txt:'Neurosurgeon consultation and contrast MRI recommended'},
+      ],
+    },
+    conf:87, seg:{ tumor:14.2, necro:3.1, edema:22.8, healthy:56.4, vent:2.8, enhanc:0.7 }
+  },
+  { status:'normal',
+    lbl:{uz:'Normal',ru:'Норма',en:'Normal'},
+    findings:{
+      uz:[
+        {t:'normal',lbl:"Miya to'qimasi",   txt:"Patologik o'zgarishlar aniqlanmadi, barcha loblar simmetrik"},
+        {t:'normal',lbl:'Oq modda',          txt:"Oq modda zichligi bir xil, demyelinizatsiya yo'q"},
+        {t:'normal',lbl:'Qorinchalar',       txt:"Lateral qorinchalar o'lchamlari yosh normasi doirasida"},
+        {t:'normal',lbl:"Qon ta'minoti",     txt:'Miya qon tomirlarida patologik o\'zgarish topilmadi'},
+        {t:'normal',lbl:'Xulosa',            txt:"MRI ko'rsatkichlari normal doirada — o'sma belgilari yo'q"},
+      ],
+      ru:[
+        {t:'normal',lbl:'Ткань мозга',      txt:'Патологических изменений нет, все доли симметричны'},
+        {t:'normal',lbl:'Белое вещество',   txt:'Плотность однородна, демиелинизации нет'},
+        {t:'normal',lbl:'Желудочки',         txt:'Размеры боковых желудочков в норме'},
+        {t:'normal',lbl:'Кровоснабжение',   txt:'Патологических изменений в сосудах не выявлено'},
+        {t:'normal',lbl:'Заключение',       txt:'МРТ-показатели в норме — признаков опухоли нет'},
+      ],
+      en:[
+        {t:'normal',lbl:'Brain tissue',     txt:'No pathological changes, all lobes symmetric'},
+        {t:'normal',lbl:'White matter',     txt:'Uniform density, no demyelination'},
+        {t:'normal',lbl:'Ventricles',       txt:'Lateral ventricle sizes within age-appropriate range'},
+        {t:'normal',lbl:'Blood supply',     txt:'No pathological changes in cerebral vessels'},
+        {t:'normal',lbl:'Conclusion',       txt:'MRI parameters normal — no tumor signs detected'},
+      ],
+    },
+    conf:96, seg:{ tumor:0, necro:0, edema:0, healthy:94.4, vent:5.6, enhanc:0 }
+  },
+  { status:'critical',
+    lbl:{uz:'Xavfli',ru:'Критично',en:'Critical'},
+    findings:{
+      uz:[
+        {t:'bad',  lbl:"Katta o'sma",        txt:"O'ng frontal lobda 42×38×35mm ko'p markazli o'sma (Glioblastoma shubhasi — WHO Grade IV)"},
+        {t:'bad',  lbl:'Nekroz zonasi',       txt:"O'sma markazida nekrotik o'zgarishlar 18×16mm — keng tarqalgan"},
+        {t:'warn', lbl:'Midline siljishi',    txt:"O'rta chiziq 7mm chapga siljigan — mass-effect"},
+        {t:'warn', lbl:'Enhancing',           txt:'Qalin devor bilan o\'ralgan enhancing ring — agressiv o\'sma'},
+        {t:'warn', lbl:'SHOSHILINCH',         txt:'Neyroximoyag konsultatsiyasi va operatsiya masalasi ko\'rilishi zarur'},
+      ],
+      ru:[
+        {t:'bad',  lbl:'Крупная опухоль',    txt:'Многоцентровая опухоль 42×38×35мм в правой лобной доле (Глиобластома — WHO Grade IV)'},
+        {t:'bad',  lbl:'Зона некроза',       txt:'Некроз в центре опухоли 18×16мм — обширный'},
+        {t:'warn', lbl:'Смещение',           txt:'Средняя линия смещена на 7мм влево — масс-эффект'},
+        {t:'warn', lbl:'Enhancing',          txt:'Кольцевидное усиление с толстой стенкой — агрессивная опухоль'},
+        {t:'warn', lbl:'СРОЧНО',             txt:'Немедленная консультация нейрохирурга и решение вопроса операции'},
+      ],
+      en:[
+        {t:'bad',  lbl:'Large tumor',        txt:'Multicentric tumor 42×38×35mm in right frontal lobe (Glioblastoma — WHO Grade IV)'},
+        {t:'bad',  lbl:'Necrosis zone',      txt:'Central necrosis 18×16mm — extensive'},
+        {t:'warn', lbl:'Midline shift',      txt:'Midline shifted 7mm to the left — mass effect'},
+        {t:'warn', lbl:'Enhancing',          txt:'Ring enhancement with thick wall — aggressive tumor'},
+        {t:'warn', lbl:'URGENT',             txt:'Immediate neurosurgeon consultation and surgical evaluation required'},
+      ],
+    },
+    conf:93, seg:{ tumor:18.4, necro:9.2, edema:31.6, healthy:36.5, vent:2.1, enhanc:2.2 }
+  },
+];
+
+// ===================== ANALYSIS =====================
+async function runAnalysis(){
+  if(S.running) return;
+
+  const flairFile = document.getElementById('fileFlair')?.files[0];
+const t1File    = document.getElementById('fileT1')?.files[0];
+const t1ceFile  = document.getElementById('fileT1ce')?.files[0];
+const t2File    = document.getElementById('fileT2')?.files[0];
+
+if(!flairFile || !t1File || !t1ceFile || !t2File){
+  toast("4 ta fayl ham yuklanishi kerak: FLAIR, T1, T1ce, T2!", 'error');
+  return;
+}
+
+  S.running=true;
+  const btn=document.getElementById('analyzeBtn');
+  const sp=document.getElementById('spinner');
+  const empty=document.getElementById('resultEmpty');
+  const content=document.getElementById('resultContent');
+  const lb=document.getElementById('loadBar');
+  const lf=document.getElementById('loadFill');
+
+  btn.disabled=true;
+  btn.innerHTML='<span>⏳</span> '+t('analyzing');
+  sp.style.display='block';
+  empty.querySelector('.result-empty-icon').style.display='none';
+  empty.querySelector('.result-empty-text').textContent=t('ai_work');
+  content.style.display='none';
+  lb.style.display='block'; lf.style.width='0';
+
+  let p=0;
+  const bi=setInterval(()=>{ p=Math.min(p+Math.random()*11,91); lf.style.width=p+'%'; },200);
+
+  try {
+    // Faylni backendga yuborish
+    const formData = new FormData();
+formData.append('flair', flairFile);
+formData.append('t1',    t1File);
+formData.append('t1ce',  t1ceFile);
+formData.append('t2',    t2File);
+
+    const response = await fetch('http://127.0.0.1:8000/analyze', {
+      method: 'POST',
+      body: formData
+    });
+
+    if(!response.ok){
+      const err = await response.json();
+      throw new Error(err.detail || 'Server xatosi');
+    }
+
+    const d = await response.json();
+
+    clearInterval(bi); lf.style.width='100%';
+
+    setTimeout(()=>{
+      sp.style.display='none'; empty.style.display='none';
+      lb.style.display='none'; content.style.display='block';
+
+      // Status label
+      const labels = {
+        normal:    {uz:'Normal',       ru:'Норма',     en:'Normal'},
+        attention: {uz:"Ehtiyot bo'l", ru:'Внимание',  en:'Attention'},
+        critical:  {uz:'Xavfli',       ru:'Критично',  en:'Critical'},
+      };
+      const lbl = labels[d.status][S.lang] || labels[d.status].uz;
+
+      // Findings
+      const findingsMap = {
+        normal: [
+          {t:'normal', lbl:"Miya to'qimasi", txt:"Patologik o'zgarishlar aniqlanmadi"},
+          {t:'normal', lbl:'Xulosa',         txt:"MRI ko'rsatkichlari normal — o'sma belgilari yo'q"},
+        ],
+        attention: [
+          {t:'warn', lbl:"O'sma aniqlandi",  txt:`O'sma yadrosi: ${d.seg.tumor}%, Edema: ${d.seg.edema}%`},
+          {t:'warn', lbl:'Enhancing zona',   txt:`Enhancing tumor: ${d.seg.enhanc}%`},
+          {t:'warn', lbl:'Tavsiya',          txt:'Neyroximoyag konsultatsiyasi tavsiya etiladi'},
+        ],
+        critical: [
+          {t:'bad',  lbl:"Katta o'sma",      txt:`O'sma yadrosi: ${d.seg.tumor}%, Nekroz: ${d.seg.necro}%`},
+          {t:'bad',  lbl:'Nekroz zonasi',    txt:`Nekroz: ${d.seg.necro}% — keng tarqalgan`},
+          {t:'warn', lbl:'Edema',            txt:`Perifokal shish: ${d.seg.edema}%`},
+          {t:'warn', lbl:'SHOSHILINCH',      txt:'Neyroximoyag konsultatsiyasi zarur!'},
+        ],
+      };
+      const findings = findingsMap[d.status] || findingsMap.normal;
+      const now = new Date().toLocaleString('uz-UZ',{timeZone:'Asia/Tashkent'});
+
+      content.innerHTML=`
+        <div class="result-header">
+          <div class="result-status ${d.status}">
+            ${d.status==='normal'?'✅':d.status==='attention'?'⚠️':'🚨'} ${lbl}
+          </div>
+          <div class="result-ts">${now}</div>
+        </div>
+        <div style="font-size:11.5px;color:var(--text3);margin-bottom:11px;">
+          🧠 ${S.scanType} · ${S.user?S.user.fn+' '+S.user.ln:'—'}
+        </div>
+        <div class="findings">
+          ${findings.map(f=>`
+            <div class="finding ${f.t}">
+              <div class="finding-ico">${f.t==='normal'?'✅':f.t==='warn'?'⚠️':'🚨'}</div>
+              <div><div class="finding-lbl">${f.lbl}</div>
+              <div class="finding-txt">${f.txt}</div></div>
+            </div>`).join('')}
+        </div>
+        <div class="conf-wrap">
+          <div class="conf-label">
+            <span>${t('conf_lbl')}</span>
+            <span style="font-weight:700;">${d.conf}%</span>
+          </div>
+          <div class="conf-bar"><div class="conf-fill" id="cFill" style="width:0%"></div></div>
+        </div>
+        <div class="disclaimer">${t('discl')}</div>
+      `;
+
+      setTimeout(()=>{
+  const f=document.getElementById('cFill');
+  if(f) f.style.width=d.conf+'%';
+  show3D(d);
+  
+  // ── 3D Slice Viewer ──────────────────────────────────
+if(d.slices && d.slices.length > 0){
+  let viewer = document.getElementById('sliceViewer');
+  if(!viewer){
+    viewer = document.createElement('div');
+    viewer.id = 'sliceViewer';
+    viewer.style.cssText = `
+      margin-top:16px;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid var(--border);
+      background:black;
+    `;
+    document.getElementById('resultContent').appendChild(viewer);
+  }
+
+  viewer.innerHTML = `
+    <div style="background:var(--bg3);padding:10px 14px;font-size:12px;
+                font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);
+                display:flex;align-items:center;justify-content:space-between;">
+      <span>🧠 3D Slice Viewer — <span id="sliceNum">64</span>-chi kesim</span>
+      <span style="font-size:11px;color:var(--text3);">
+        Jami: ${d.total_slices} ta slice
+      </span>
+    </div>
+    <div style="position:relative;background:black;">
+      <img id="sliceImg3D"
+     src="data:image/png;base64,${d.slices[64]}"
+     style="width:100%;max-width:520px;display:block;margin:0 auto;border-radius:6px;"/>
+    </div>
+    <div style="padding:12px 14px;background:var(--bg3);border-top:1px solid var(--border);">
+      <input type="range" id="sliceSlider"
+             min="0" max="${d.total_slices - 1}" value="64"
+             style="width:100%;accent-color:var(--accent);"
+             oninput="updateSlice3D(this.value)"/>
+      <div style="display:flex;justify-content:space-between;
+                  font-size:10px;color:var(--text3);margin-top:4px;">
+        <span>0</span>
+        <span style="color:var(--accent2);font-weight:600;">
+          ← Sliceni suring →
+        </span>
+        <span>${d.total_slices - 1}</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;padding:10px 14px;
+                background:var(--bg3);border-top:1px solid var(--border);">
+      <button onclick="playSlices()" id="playBtn"
+              style="flex:1;padding:7px;border-radius:8px;
+                     background:linear-gradient(135deg,var(--accent),var(--brain));
+                     color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer;">
+        ▶ Avtomatik
+      </button>
+      <button onclick="stopSlices()"
+              style="flex:1;padding:7px;border-radius:8px;
+                     background:var(--bg3);border:1px solid var(--border);
+                     color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;">
+        ⏹ To'xtatish
+      </button>
+    </div>
+  `;
+
+  // Slice ma'lumotlarini global saqlash
+  window._slices3D = d.slices;
+  window._sliceInterval = null;
+}
+// ────────────────────────────────────────────────────
+
+  // Slice tasvir ko'rsatish
+  if(d.slice_img){
+    let sliceDiv = document.getElementById('sliceResult');
+    if(!sliceDiv){
+      sliceDiv = document.createElement('div');
+      sliceDiv.id = 'sliceResult';
+      sliceDiv.style.cssText = 'margin-top:16px;border-radius:12px;overflow:hidden;border:1px solid var(--border);';
+      document.getElementById('resultContent').appendChild(sliceDiv);
+    }
+    sliceDiv.innerHTML = `
+  <div style="background:var(--bg3);padding:8px 14px;font-size:12px;
+              font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);">
+    🧠 MRI Slice + Segmentatsiya natijasi
+  </div>
+  <div style="padding:12px;background:#0a0f1e;">
+    <img src="data:image/png;base64,${d.slice_img}"
+         style="width:100%;max-width:520px;display:block;margin:0 auto;
+                border-radius:8px;" alt="Segmentatsiya natijasi"/>
+  </div>
+`;
+  }
+}, 100);
+
+      // Tarixga saqlash
+      S.lastResult = d;
+      d.lbl = labels[d.status];
+      d.findings = { uz: findings, ru: findings, en: findings };
+      S.history.unshift({
+        id:Date.now(), type:'brain',
+        lbl_uz:labels[d.status].uz,
+        lbl_ru:labels[d.status].ru,
+        lbl_en:labels[d.status].en,
+        status:d.status, conf:d.conf,
+        scanType:S.scanType,
+        date:new Date().toISOString(),
+        user:S.user?S.user.fn+' '+S.user.ln:'—',
+        seg:d.seg
+      });
+      localStorage.setItem('nai_hist', JSON.stringify(S.history));
+      updateBadge(); updateStats();
+      renderResultsPage();
+      toast(t('an_done')+' — '+lbl, d.status==='normal'?'success':'info');
+      S.running=false;
+      btn.disabled=false;
+      btn.innerHTML='<span>🧠</span> '+t('reanalyze');
+
+    }, 300);
+
+  } catch(err) {
+    clearInterval(bi);
+    toast('Xatolik: ' + err.message, 'error');
+    sp.style.display='none';
+    lb.style.display='none';
+    empty.querySelector('.result-empty-icon').style.display='';
+    empty.style.display='';
+    S.running=false;
+    btn.disabled=false;
+    btn.innerHTML='<span>🧠</span> <span>Tahlilni Boshlash</span>';
+  }
+}
+
+// ===================== 3D VISUALIZATION =====================
+function show3D(d){
+  const canvas=document.getElementById('viz3dCanvas');
+  const legend=document.getElementById('segLegend');
+  const controls=document.getElementById('vizControls');
+  const printNote=document.getElementById('printNote');
+  const exportBtn=document.getElementById('exportBtn');
+  const vizStatus=document.getElementById('vizStatus');
+  S.has3d=true;
+  if(vizStatus) vizStatus.textContent='';
+
+  canvas.innerHTML=`
+    <div style="width:100%;max-width:400px;margin:0 auto;">
+      ${buildVolBars(d.seg)}
+    </div>
+  `;
+
+  legend.style.display='';
+  controls.style.display='';
+  printNote.style.display='';
+  exportBtn.style.display='';
+}
+
+
+
+function buildVolBars(seg){
+  const classes=[
+    {k:'tumor',  c:'#a855f7', lk:'cls_tumor'},
+    {k:'necro',  c:'#ef4444', lk:'cls_necro'},
+    {k:'edema',  c:'#06b6d4', lk:'cls_edema'},
+    {k:'healthy',c:'#22c55e', lk:'cls_healthy'},
+    {k:'vent',   c:'#3b82f6', lk:'cls_vent'},
+    {k:'enhanc', c:'#f59e0b', lk:'cls_enhanc'},
+  ];
+  return `<div style="display:flex;flex-direction:column;gap:5px;">
+    ${classes.map(cl=>{
+      const v=seg[cl.k]||0; if(v===0) return '';
+      return `<div style="display:flex;align-items:center;gap:7px;font-size:11px;">
+        <div style="width:9px;height:9px;border-radius:2px;background:${cl.c};flex-shrink:0;"></div>
+        <div style="flex:1;color:var(--text3);">${t(cl.lk)}</div>
+        <div style="width:${Math.max(v,2)}%;height:5px;background:${cl.c};border-radius:3px;opacity:.75;transition:width .8s ease;"></div>
+        <div style="color:var(--text2);font-weight:600;width:36px;text-align:right;">${v}%</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function rotateAnim(){
+  const svg=document.getElementById('brainSvg'); if(!svg) return;
+  let r=0;
+  const a=setInterval(()=>{r+=3;svg.style.transform=`perspective(600px) rotateY(${r}deg)`;if(r>=360)clearInterval(a);},14);
+}
+function resetRot(){
+  const svg=document.getElementById('brainSvg'); if(!svg) return;
+  svg.style.transform='';
+}
+function doExport(){ toast(t('exprt_done')+' 📥','success'); }
+
+// ===================== RESULTS PAGE =====================
+function renderResultsPage(){
+  const el=document.getElementById('resultsMain');
+  if(!S.lastResult){ el.innerHTML=`<div class="hist-empty"><div class="hist-empty-icon">📊</div><div style="font-size:13.5px;">${t('no_results')}</div></div>`; return; }
+  const d=S.lastResult;
+  const lbl=d.lbl[S.lang]||d.lbl.uz;
+  const seg=d.seg;
+  const classes=[
+    {k:'tumor',  c:'#a855f7', lk:'cls_tumor'},
+    {k:'necro',  c:'#ef4444', lk:'cls_necro'},
+    {k:'edema',  c:'#06b6d4', lk:'cls_edema'},
+    {k:'healthy',c:'#22c55e', lk:'cls_healthy'},
+    {k:'vent',   c:'#3b82f6', lk:'cls_vent'},
+    {k:'enhanc', c:'#f59e0b', lk:'cls_enhanc'},
+  ];
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <div class="acard">
+        <div class="acard-title">📋 ${t('result_lbl')}</div>
+        <div class="result-status ${d.status}" style="margin-bottom:14px;">
+          ${d.status==='normal'?'✅':d.status==='attention'?'⚠️':'🚨'} ${lbl}
+        </div>
+        <div class="conf-wrap">
+          <div class="conf-label"><span>${t('conf_lbl')}</span><span style="font-weight:700;">${d.conf}%</span></div>
+          <div class="conf-bar"><div class="conf-fill" style="width:${d.conf}%"></div></div>
+        </div>
+        <div class="disclaimer" style="margin-top:10px;">${t('discl')}</div>
+      </div>
+      <div class="acard">
+        <div class="acard-title">🧬 ${t('classes_title')}</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${classes.map(cl=>{
+            const v=seg[cl.k]||0;
+            return `<div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:11px;height:11px;border-radius:3px;background:${cl.c};flex-shrink:0;"></div>
+              <div style="flex:1;font-size:12.5px;color:var(--text2);">${t(cl.lk)}</div>
+              <div style="width:${Math.max(v,.5)}%;max-width:60%;height:6px;background:${cl.c};border-radius:3px;opacity:.7;"></div>
+              <div style="font-size:12px;font-weight:700;color:var(--text);width:38px;text-align:right;">${v}%</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ===================== STATS =====================
+function updateStats(){
+  const h=S.history;
+  document.getElementById('stTotal').textContent=h.length;
+  document.getElementById('stBrain').textContent=h.filter(x=>x.type==='brain').length;
+  document.getElementById('st3d').textContent=S.has3d?'1':'0';
+  const today=new Date().toDateString();
+  document.getElementById('stToday').textContent=h.filter(x=>new Date(x.date).toDateString()===today).length;
+  if(document.getElementById('ps1')) document.getElementById('ps1').textContent=h.length;
+}
+
+// ===================== DASHBOARD HISTORY =====================
+function renderDash(){
+  updateStats();
+  const el=document.getElementById('dashHistory');
+  const recent=S.history.slice(0,5);
+  if(!recent.length){ el.innerHTML=`<div class="hist-empty"><div class="hist-empty-icon">📭</div><div style="font-size:13.5px;">${t('no_hist')}</div></div>`; return; }
+  el.innerHTML=`<div class="hist-list">${recent.map(h=>{
+    const lbl=h['lbl_'+S.lang]||h.lbl_uz||'—';
+    const date=new Date(h.date).toLocaleDateString('uz-UZ',{day:'2-digit',month:'short',timeZone:'Asia/Tashkent'});
+    const si=h.status==='normal'?'✅':h.status==='attention'?'⚠️':'🚨';
+    const col=h.status==='normal'?'var(--success)':h.status==='attention'?'var(--warn)':'var(--danger)';
+    return `<div class="hist-item">
+      <div class="hist-dot">🧠</div>
+      <div class="hist-info"><div class="hist-name">${t('nav_brain')}</div><div class="hist-meta">${si} ${lbl}</div></div>
+      <div class="hist-right"><div class="hist-conf" style="color:${col}">${h.conf}%</div><div class="hist-date">${date}</div></div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ===================== HISTORY =====================
+function renderHist(filter){
+  const list=document.getElementById('histList');
+  const histCount=document.getElementById('histCount');
+  histCount.textContent=S.history.length;
+  const items=filter==='all'?S.history:S.history.filter(h=>h.type===filter);
+  if(!items.length){ list.innerHTML=`<div class="hist-empty"><div class="hist-empty-icon">📭</div><div>${t('no_hist')}</div></div>`; return; }
+  list.innerHTML=items.map(h=>{
+    const lbl=h['lbl_'+S.lang]||h.lbl_uz||'—';
+    const date=new Date(h.date).toLocaleDateString('uz-UZ',{day:'2-digit',month:'short',year:'numeric',timeZone:'Asia/Tashkent'});
+    const si=h.status==='normal'?'✅':h.status==='attention'?'⚠️':'🚨';
+    const col=h.status==='normal'?'var(--success)':h.status==='attention'?'var(--warn)':'var(--danger)';
+    return `<div class="hist-item">
+      <div class="hist-dot">🧠</div>
+      <div class="hist-info">
+        <div class="hist-name">${t('nav_brain')} · ${h.scanType||'MRI'}</div>
+        <div class="hist-meta">${si} ${lbl} · ${h.user}</div>
+      </div>
+      <div class="hist-right"><div class="hist-conf" style="color:${col}">${h.conf}%</div><div class="hist-date">${date}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function filterH(filter,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHist(filter);
+}
+
+function updateBadge(){ document.getElementById('histBadge').textContent=S.history.length; }
+
+// ===================== TOAST =====================
+function toast(msg,type='info'){
+  const icons={success:'✅',error:'❌',info:'ℹ️'};
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<span>${icons[type]}</span> ${msg}`;
+  document.getElementById('toastBox').appendChild(el);
+  setTimeout(()=>{
+    el.style.opacity='0';el.style.transform='translateX(40px)';el.style.transition='all .3s ease';
+    setTimeout(()=>el.remove(),300);
+  },3500);
+}
+
+// ===================== INIT =====================
+updateBadge(); updateStats(); applyT();
+if(S.user){ updateSb(); document.getElementById('profileNot').style.display='none'; document.getElementById('profileYes').style.display=''; }
+renderDash();
+document.getElementById('modal').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+// ── 3D Slice Viewer funksiyalari ──
+function updateSlice3D(idx){
+  const img = document.getElementById('sliceImg3D');
+  const num = document.getElementById('sliceNum');
+  const slider = document.getElementById('sliceSlider');
+  if(!img) return;
+  const slices = window._slices3D;
+  if(!slices || !slices[idx]) return;
+  img.src = 'data:image/png;base64,' + slices[idx];
+  if(num) num.textContent = idx;
+  if(slider) slider.value = idx;
+}
+
+function playSlices(){
+  stopSlices();
+  const slices = window._slices3D;
+  if(!slices) return;
+  let idx = parseInt(document.getElementById('sliceSlider')?.value || 0);
+  const total = slices.length;
+  const btn = document.getElementById('playBtn');
+  if(btn) btn.style.opacity = '0.6';
+  window._sliceInterval = setInterval(()=>{
+    updateSlice3D(idx);
+    idx = (idx + 1) % total;
+  }, 80);
+}
+
+function stopSlices(){
+  if(window._sliceInterval){
+    clearInterval(window._sliceInterval);
+    window._sliceInterval = null;
+  }
+  const btn = document.getElementById('playBtn');
+  if(btn) btn.style.opacity = '1';
+}
+function handleUpload4(input, modality){
+  const file = input.files[0];
+  if(!file) return;
+  toast(`✅ ${modality.toUpperCase()} yuklandi: ${file.name}`, 'success');
+}
+// ─────────────────────────────────
+</script>
+</body>
+</html>
